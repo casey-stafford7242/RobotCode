@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 public class TeleOpVelVort extends OpMode
 {
     DcMotor leftShootMotor, rightShootMotor, whiskMotor, frontRightMotor, frontLeftMotor, backRightMotor, backLeftMotor, slideRailMotor;
+    GyroSensor gyro;
     Servo leftButtonPushServo, rightButtonPushServo;
     float mmPerInch = 25.4f;
     float mmBotWidth = 18 * mmPerInch;
@@ -40,6 +42,8 @@ public class TeleOpVelVort extends OpMode
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
         backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
         backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
+        gyro = hardwareMap.gyroSensor.get("gyro");
+        gyro.calibrate();
         rightShootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         leftShootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -51,6 +55,25 @@ public class TeleOpVelVort extends OpMode
     @Override
     public void loop()
     {
+        ///TODO::: REM 0OV L8R
+        if(gamepad1.a)
+        {
+            if(gyro.getHeading() > 5)
+            {
+                backLeftMotor.setPower(-.5);
+                backRightMotor.setPower(.5);
+                frontLeftMotor.setPower(.6);
+                frontRightMotor.setPower(-.6);
+            }
+            else
+            {
+                backLeftMotor.setPower(-.5);
+                backRightMotor.setPower(.5);
+                frontLeftMotor.setPower(.5);
+                frontRightMotor.setPower(-.5);
+            }
+        }
+
         if(gamepad1.dpad_left)
         {
             leftButtonPushServo.setPosition(.25);
