@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -18,6 +19,7 @@ public class TeleOpVelVort extends OpMode
 {
     DcMotor leftShootMotor, rightShootMotor, whiskMotor, frontRightMotor, frontLeftMotor, backRightMotor, backLeftMotor, slideRailMotor;
     Servo leftButtonPushServo, rightButtonPushServo;
+    GyroSensor gyro;
     float mmPerInch = 25.4f;
     float mmBotWidth = 18 * mmPerInch;
     float mmFTCFieldWidth = (12 * 12 - 2) * mmPerInch;
@@ -30,6 +32,7 @@ public class TeleOpVelVort extends OpMode
     @Override
     public void init()
     {
+        gyro = hardwareMap.gyroSensor.get("gyro");
         leftShootMotor = hardwareMap.dcMotor.get("leftShootMotor");
         rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
         whiskMotor = hardwareMap.dcMotor.get("whiskMotor");
@@ -44,6 +47,7 @@ public class TeleOpVelVort extends OpMode
         leftShootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        gyro.calibrate();
         leftButtonPushServo.setPosition(0);
         rightButtonPushServo.setPosition(1);
     }
@@ -51,6 +55,30 @@ public class TeleOpVelVort extends OpMode
     @Override
     public void loop()
     {
+        if(gamepad1.a)
+        {
+            if(gyro.getHeading() > 5 && gyro.getHeading() < 180)
+            {
+                frontRightMotor.setPower(-.6);
+                backRightMotor.setPower(.6);
+                frontLeftMotor.setPower(.5);
+                backLeftMotor.setPower(-.5);
+            }
+            else if (gyro.getHeading() > 180)
+            {
+                frontRightMotor.setPower(-.5);
+                frontLeftMotor.setPower(.6);
+                backRightMotor.setPower(.5);
+                backLeftMotor.setPower(-.6);
+            }
+            else if (gyro.getHeading() <= 5)
+            {
+                frontRightMotor.setPower(-.5);
+                frontLeftMotor.setPower(.5);
+                backLeftMotor.setPower(-.5);
+                backRightMotor.setPower(.5);
+            }
+        }
         if(gamepad1.dpad_left)
         {
             leftButtonPushServo.setPosition(.25);
@@ -156,7 +184,7 @@ public class TeleOpVelVort extends OpMode
             //alignFourMotorSpeed(frontRightMotor, backRightMotor, frontLeftMotor, backLeftMotor);
         }
         //STOP
-        if (gamepad1.right_stick_x == 0 && gamepad1.left_stick_y == 0 && gamepad1.left_trigger == 0 && gamepad1.right_trigger == 0)
+        if (gamepad1.right_stick_x == 0 && gamepad1.left_stick_y == 0 && gamepad1.left_trigger == 0 && gamepad1.right_trigger == 0 && gamepad1.a == false)
         {
             frontRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
@@ -215,8 +243,8 @@ public class TeleOpVelVort extends OpMode
         //ROTATE ON BACK AXIS LEFT
         else if (gamepad1.b && gamepad1.left_stick_x < 0 && gamepad1.right_stick_y == 0 && gamepad1.right_stick_x == 0)
         {
-            frontLeftMotor.setPower(gamepad1.left_stick_x);
-            frontRightMotor.setPower(-gamepad1.left_stick_x);
+            frontLeftMotor.setPower(-gamepad1.left_stick_x);
+            frontRightMotor.setPower(gamepad1.left_stick_x);
             backLeftMotor.setPower(0);
             backRightMotor.setPower(0);
             //alignMotorSpeed(frontLeftMotor, frontRightMotor);
