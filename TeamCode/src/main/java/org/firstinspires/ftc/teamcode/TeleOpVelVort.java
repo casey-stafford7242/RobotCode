@@ -18,7 +18,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 public class TeleOpVelVort extends OpMode
 {
     DcMotor leftShootMotor, rightShootMotor, whiskMotor, frontRightMotor, frontLeftMotor, backRightMotor, backLeftMotor, slideRailMotor;
-    GyroSensor gyro;
     Servo leftButtonPushServo, rightButtonPushServo;
     GyroSensor gyro;
     float mmPerInch = 25.4f;
@@ -58,7 +57,6 @@ public class TeleOpVelVort extends OpMode
     @Override
     public void loop()
     {
-<<<<<<< HEAD
         if(gamepad1.a)
         {
             if(gyro.getHeading() > 5 && gyro.getHeading() < 180)
@@ -83,27 +81,7 @@ public class TeleOpVelVort extends OpMode
                 backRightMotor.setPower(.5);
             }
         }
-=======
-        ///TODO::: REM 0OV L8R
-        if(gamepad1.a)
-        {
-            if(gyro.getHeading() > 5)
-            {
-                backLeftMotor.setPower(-.5);
-                backRightMotor.setPower(.5);
-                frontLeftMotor.setPower(.6);
-                frontRightMotor.setPower(-.6);
-            }
-            else
-            {
-                backLeftMotor.setPower(-.5);
-                backRightMotor.setPower(.5);
-                frontLeftMotor.setPower(.5);
-                frontRightMotor.setPower(-.5);
-            }
-        }
 
->>>>>>> 58af190e7d9def058e28c80afe790a4761f489de
         if(gamepad1.dpad_left)
         {
             leftButtonPushServo.setPosition(.25);
