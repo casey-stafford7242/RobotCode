@@ -23,8 +23,10 @@ public class AutonomousRed extends OpMode
     ColorSensor rightButtonPushColorSensor;
     GyroSensor gyro;
     OpticalDistanceSensor colorSensor;
-    boolean alignedWithWall = false;
-    boolean driveUsingTimeTrigger = false;
+    boolean firstGyroTurnTrigger = false;
+    boolean secondGyroTurnTrigger = false;
+    boolean driveUsingTimeTriggerFirst = false;
+    boolean driveUsingTimeTriggerSecond = false;
     boolean shotParticles = false;
     boolean foundWhiteLineTrigger = false;
     boolean timeBeenSet = false;
@@ -63,8 +65,8 @@ public class AutonomousRed extends OpMode
        // rightTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "rightTouchSensor");
         gyro = hardwareMap.gyroSensor.get("gyro");
         gyro.calibrate();
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightShootMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         curState = BotState.SHOOT_PARTICLES;
     }
@@ -78,64 +80,99 @@ public class AutonomousRed extends OpMode
         telemetry.addData("Light Val", colorSensor.getLightDetected());
         telemetry.addData("Gyro Heading", gyro.getHeading());
 
-        if (backLeftMotor.getPower() == 0 && backRightMotor.getPower() == 0 && frontLeftMotor.getPower() == 0 && frontRightMotor.getPower() == 0)
+        if(backLeftMotor.getPower() == 0 && backRightMotor.getPower() == 0 && frontLeftMotor.getPower() == 0 && frontRightMotor.getPower() == 0)
         {
-            gyro.calibrate();
+            sleep(1000);
         }
-
         //May be the ugliest code ever created
         if(!shotParticles)
         {
             shootParticles();
         }
-        if(driveUsingTimeTrigger == false && shotParticles == true)
+
+        if(driveUsingTimeTriggerFirst == false && shotParticles == true)
         {
-            driveUsingTime(1.5, .5);
-        }
-        if(strafeUsingTimeTrigger == false && driveUsingTimeTrigger == true && shotParticles == true)
-        {
-            strafeUsingTime(3, .5);
+            driveUsingTime(4, .4);
         }
 
-        if(alignedWithWall == false && shotParticles == true && driveUsingTimeTrigger == true && strafeUsingTimeTrigger == true)
+        if(firstGyroTurnTrigger == false && shotParticles == true && driveUsingTimeTriggerFirst == true)
         {
-            alignWithWall();
+            gyroTurn(.2, 90, 5);
         }
-        if(foundWhiteLineTrigger == false && shotParticles == true && driveUsingTimeTrigger == true && strafeUsingTimeTrigger == true && alignedWithWall == true)
+        if(firstGyroTurnTrigger == true && shotParticles == true && driveUsingTimeTriggerFirst == true && driveUsingTimeTriggerSecond == false)
         {
-            //Runs twice after reset of foundWhiteLineTrigger in pushButton() method
-            runToWhiteLine(.04, .25);
+            driveUsingTime(4, .4);
         }
-        if(foundWhiteLineTrigger == true && shotParticles == true && driveUsingTimeTrigger == true && strafeUsingTimeTrigger == true && pushButtonTrigger == false && alignedWithWall == true)
+        if(shotParticles == true && driveUsingTimeTriggerFirst == true && driveUsingTimeTriggerSecond == true && firstGyroTurnTrigger == true && secondGyroTurnTrigger == false)
+        {
+            gyroTurn(-.2, 0, 5);
+        }
+        if(foundWhiteLineTrigger == false && shotParticles == true && driveUsingTimeTriggerFirst == true && driveUsingTimeTriggerSecond == true && firstGyroTurnTrigger == true && secondGyroTurnTrigger == true)
+        {
+            runToWhiteLine(.05, .3);
+        }
+        if(foundWhiteLineTrigger == true && shotParticles == true && driveUsingTimeTriggerFirst == true && strafeUsingTimeTrigger == true && pushButtonTrigger == false && secondGyroTurnTrigger == true && driveUsingTimeTriggerSecond == false)
         {
             //Runs twice after reset of pushButtonTrigger in runToWhiteLine() method
             pushButton();
         }
-
-        if(driveUsingTimeTrigger == true && strafeUsingTimeTrigger == true && foundWhiteLineTrigger == true && pushButtonTrigger == true && shotParticles == true && alignedWithWall == true)
-        {
-            telemetry.addData("We DID IT", "YAAAAAAAAAAY");
-        }
-
     }
+
+    public void sleep(long time)
+    {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void gyroTurn(double motorPower, int gyroTarget, int TOLERANCE)
+    {
+        if(gyro.getHeading() < gyroTarget + TOLERANCE && gyro.getHeading() > gyroTarget - TOLERANCE)
+        {
+            backLeftMotor.setPower(0);
+            backRightMotor.setPower(0);
+            frontRightMotor.setPower(0);
+            frontLeftMotor.setPower(0);
+            if(firstGyroTurnTrigger == false)
+            {
+                firstGyroTurnTrigger = true;
+            }
+            else
+            {
+                secondGyroTurnTrigger = true;
+            }
+        }
+        else
+        {
+            backLeftMotor.setPower(motorPower);
+            backRightMotor.setPower(-motorPower);
+            frontLeftMotor.setPower(motorPower);
+            frontRightMotor.setPower(-motorPower);
+        }
+    }
+
+
+
 
 
     public void alignWithWall()
     {
         if(gyro.getHeading() > 180)
         {
-            backLeftMotor.setPower(.125);
-            frontLeftMotor.setPower(.125);
-            backRightMotor.setPower(-.125);
-            frontRightMotor.setPower(-.125);
+            backLeftMotor.setPower(.2);
+            frontLeftMotor.setPower(.2);
+            backRightMotor.setPower(-.2);
+            frontRightMotor.setPower(-.2);
             //alignFourMotorSpeed(backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor);
         }
         else if (gyro.getHeading() < 180 && gyro.getHeading() > 0)
         {
-            backRightMotor.setPower(.125);
-            frontRightMotor.setPower(.125);
-            backLeftMotor.setPower(-.125);
-            frontLeftMotor.setPower(-.125);
+            backRightMotor.setPower(.2);
+            frontRightMotor.setPower(.2);
+            backLeftMotor.setPower(-.2);
+            frontLeftMotor.setPower(-.2);
             //alignFourMotorSpeed(backRightMotor, frontRightMotor, backLeftMotor, frontLeftMotor);
         }
 
@@ -145,7 +182,14 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            alignedWithWall = true;
+            if(firstGyroTurnTrigger == false)
+            {
+                firstGyroTurnTrigger = true;
+            }
+            else
+            {
+                secondGyroTurnTrigger = true;
+            }
         }
     }
 
@@ -171,8 +215,15 @@ public class AutonomousRed extends OpMode
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
             timeBeenSet = false;
+            if(driveUsingTimeTriggerFirst == false)
+            {
+                driveUsingTimeTriggerFirst = true;
+            }
+            else
+            {
+                driveUsingTimeTriggerSecond = true;
+            }
             startMethodTime = 0;
-            driveUsingTimeTrigger = true;
         }
     }
 
@@ -261,13 +312,13 @@ public class AutonomousRed extends OpMode
 
     public void shootParticles()
     {
-        if(time <= 2)
+        if(time <= 3)
         {
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time <= 4 && time > 2)
+        if(time <= 4 && time > 3)
         {
             whiskMotor.setPower(1);
             leftShootMotor.setPower(.25);

@@ -32,13 +32,12 @@ public class TeleOpVelVort extends OpMode
     @Override
     public void init()
     {
-        gyro = hardwareMap.gyroSensor.get("gyro");
         leftShootMotor = hardwareMap.dcMotor.get("leftShootMotor");
         rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
         whiskMotor = hardwareMap.dcMotor.get("whiskMotor");
         slideRailMotor = hardwareMap.dcMotor.get("slideRailMotor");
-        leftButtonPushServo = hardwareMap.servo.get("leftButtonPushServo");
-        rightButtonPushServo = hardwareMap.servo.get("rightButtonPushServo");
+        //leftButtonPushServo = hardwareMap.servo.get("leftButtonPushServo");
+        //rightButtonPushServo = hardwareMap.servo.get("rightButtonPushServo");
         frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
         backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
@@ -50,8 +49,6 @@ public class TeleOpVelVort extends OpMode
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         gyro.calibrate();
-        leftButtonPushServo.setPosition(0);
-        rightButtonPushServo.setPosition(1);
     }
 
     @Override
@@ -61,17 +58,17 @@ public class TeleOpVelVort extends OpMode
         {
             if(gyro.getHeading() > 5 && gyro.getHeading() < 180)
             {
-                frontRightMotor.setPower(-.6);
-                backRightMotor.setPower(.6);
+                frontRightMotor.setPower(-.55);
+                backRightMotor.setPower(.55);
                 frontLeftMotor.setPower(.5);
                 backLeftMotor.setPower(-.5);
             }
             else if (gyro.getHeading() > 180)
             {
                 frontRightMotor.setPower(-.5);
-                frontLeftMotor.setPower(.6);
+                frontLeftMotor.setPower(.55);
                 backRightMotor.setPower(.5);
-                backLeftMotor.setPower(-.6);
+                backLeftMotor.setPower(-.55);
             }
             else if (gyro.getHeading() <= 5)
             {
@@ -82,6 +79,7 @@ public class TeleOpVelVort extends OpMode
             }
         }
 
+        /*
         if(gamepad1.dpad_left)
         {
             leftButtonPushServo.setPosition(.25);
@@ -98,6 +96,7 @@ public class TeleOpVelVort extends OpMode
         {
             rightButtonPushServo.setPosition(1);
         }
+        */
         if(gamepad2.a==true)
         {
             leftShootMotor.setPower(.15);
@@ -124,8 +123,8 @@ public class TeleOpVelVort extends OpMode
         }
         if(gamepad2.b == true && gamepad2.x == false && gamepad2.y == false && gamepad2.a == false)
         {
-            leftShootMotor.setPower(.125);
-            rightShootMotor.setPower(-.1255);
+            leftShootMotor.setPower(-.5);
+            rightShootMotor.setPower(.5);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
 
@@ -218,19 +217,19 @@ public class TeleOpVelVort extends OpMode
         //STRAFE LEFT
         if (gamepad1.left_trigger > 0 && gamepad1.right_trigger == 0)
         {
-            frontRightMotor.setPower(-gamepad1.left_trigger);
-            backRightMotor.setPower(gamepad1.left_trigger);
-            frontLeftMotor.setPower(gamepad1.left_trigger);
-            backLeftMotor.setPower(-gamepad1.left_trigger);
+            frontRightMotor.setPower(gamepad1.left_trigger);
+            backRightMotor.setPower(-gamepad1.left_trigger);
+            frontLeftMotor.setPower(-gamepad1.left_trigger);
+            backLeftMotor.setPower(gamepad1.left_trigger);
             //alignFourMotorSpeed(frontRightMotor, backRightMotor, frontLeftMotor, backLeftMotor);
         }
         //STRAFE RIGHT
         if (gamepad1.right_trigger > 0 && gamepad1.left_trigger == 0)
         {
-            frontLeftMotor.setPower(-gamepad1.right_trigger);
-            backLeftMotor.setPower(gamepad1.right_trigger);
-            frontRightMotor.setPower(gamepad1.right_trigger);
-            backRightMotor.setPower(-gamepad1.right_trigger);
+            frontRightMotor.setPower(-gamepad1.right_trigger);
+            backRightMotor.setPower(gamepad1.right_trigger);
+            frontLeftMotor.setPower(gamepad1.right_trigger);
+            backLeftMotor.setPower(-gamepad1.right_trigger);
             //alignFourMotorSpeed(frontRightMotor, backRightMotor, frontLeftMotor, backLeftMotor);
         }
 
