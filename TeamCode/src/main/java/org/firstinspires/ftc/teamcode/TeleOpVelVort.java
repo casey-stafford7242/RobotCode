@@ -271,6 +271,8 @@ public class TeleOpVelVort extends OpMode
 
     public int motorSpeed(DcMotor motor)
     {
+        //Gets the Speed (NOT POWER) of the motor given as a parameter
+        //We use this to see the true speed of the motors, not just what we tell the power to be
         if(speedCheckTrigger == false)
         {
             speedCheckStartTime = time;
@@ -290,26 +292,35 @@ public class TeleOpVelVort extends OpMode
 
     public double rpmToPowerConverter(int numToConvert)
     {
+        //Converts the speed number we are getting to a power that we can set the motor's target power to
+        //Uses a constant which we found by setting the power of one of our motors to 1 and calling motorSpeed() on it
         double convertedNum = (double)(numToConvert / MAX_MOTOR_RPM);
         return convertedNum;
     }
 
     public void alignMotorSpeed(DcMotor motorOne, DcMotor motorTwo)
     {
+        //Takes the absolute value of the motors motorOne and motorTwo and finds the mid point between them
         if(Math.abs(motorSpeed(motorOne)) > Math.abs(motorSpeed(motorTwo)))
         {
+            // if motorOne is spinning faster, we slow it down to meet motorTwo
+            // motorTwo speeds up to meet motorOne at the midpoint between their speeds
             telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
             motorOne.setPower(motorOne.getPower() - ((rpmToPowerConverter(motorSpeed(motorOne)) - rpmToPowerConverter(motorSpeed(motorTwo))) / 2));
             motorTwo.setPower(motorTwo.getPower() + ((rpmToPowerConverter(motorSpeed(motorOne)) - rpmToPowerConverter(motorSpeed(motorTwo))) / 2));
         }
         else if (Math.abs(motorSpeed(motorOne)) < Math.abs(motorSpeed(motorTwo)))
         {
+            // if motorTwo is spinning faster, we slow it down to meet motorOne
+            // motorOne speeds up to meet motorTwo at the midpoint between their speeds
             telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
             motorTwo.setPower(motorTwo.getPower() - ((rpmToPowerConverter(motorSpeed(motorTwo)) - rpmToPowerConverter(motorSpeed(motorOne))) / 2));
             motorOne.setPower(motorOne.getPower() + ((rpmToPowerConverter(motorSpeed(motorTwo)) + rpmToPowerConverter(motorSpeed(motorOne))) / 2));
         }
         else
         {
+            // telemetry was added to help the drivers see when the motors are aligned
+            // telemetry was also a great help during testing
             telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
         }
     }
