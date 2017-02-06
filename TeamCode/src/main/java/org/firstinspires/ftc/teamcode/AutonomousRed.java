@@ -100,46 +100,7 @@ public class AutonomousRed extends OpMode
                 pushButton();
                 break;
         }
-
-        /*
-        if(backLeftMotor.getPower() == 0 && backRightMotor.getPower() == 0 && frontLeftMotor.getPower() == 0 && frontRightMotor.getPower() == 0)
-        {
-            sleep(1000);
-        }
-        //May be the ugliest code ever created
-        if(!shotParticles)
-        {
-            shootParticles();
-        }
-
-        if(driveUsingTimeTriggerFirst == false && shotParticles == true)
-        {
-            driveUsingTime(4, .4);
-        }
-
-        if(firstGyroTurnTrigger == false && shotParticles == true && driveUsingTimeTriggerFirst == true)
-        {
-            gyroTurn(.2, 90, 5);
-        }
-        if(firstGyroTurnTrigger == true && shotParticles == true && driveUsingTimeTriggerFirst == true && driveUsingTimeTriggerSecond == false)
-        {
-            driveUsingTime(4, .4);
-        }
-        if(shotParticles == true && driveUsingTimeTriggerFirst == true && driveUsingTimeTriggerSecond == true && firstGyroTurnTrigger == true && secondGyroTurnTrigger == false)
-        {
-            gyroTurn(-.2, 0, 5);
-        }
-        if(foundWhiteLineTrigger == false && shotParticles == true && driveUsingTimeTriggerFirst == true && driveUsingTimeTriggerSecond == true && firstGyroTurnTrigger == true && secondGyroTurnTrigger == true)
-        {
-            runToWhiteLine(.05, .3);
-        }
-        if(foundWhiteLineTrigger == true && shotParticles == true && driveUsingTimeTriggerFirst == true && strafeUsingTimeTrigger == true && pushButtonTrigger == false && secondGyroTurnTrigger == true && driveUsingTimeTriggerSecond == false)
-        {
-            //Runs twice after reset of pushButtonTrigger in runToWhiteLine() method
-            pushButton();
-        }
-
-        */
+        
     }
 
     public void sleep(long time)
