@@ -1,16 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
 
-import com.qualcomm.hardware.adafruit.AdafruitI2cColorSensor;
-import com.qualcomm.hardware.ams.AMSColorSensor;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsDigitalTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -42,7 +37,7 @@ public class AutonomousRed extends OpMode
 
     public enum BotState
     {
-        SHOOT_PARTICLES, PRESS_BEACON_ONE, PRESS_BEACON_TWO, END
+        SHOOT_PARTICLES, RUN_TO_CAP_BALL, TURN_TO_FACE_WALL, RUN_TO_WALL, TURN_WITH_WALL, FIND_WHITE_LINE, PUSH_BEACON
     }
 
     @Override
@@ -80,6 +75,33 @@ public class AutonomousRed extends OpMode
         telemetry.addData("Light Val", colorSensor.getLightDetected());
         telemetry.addData("Gyro Heading", gyro.getHeading());
 
+
+        switch (curState)
+        {
+            case SHOOT_PARTICLES:
+                shootParticles();
+                break;
+            case RUN_TO_CAP_BALL:
+                driveUsingTime(4, .4);
+                break;
+            case TURN_TO_FACE_WALL:
+                gyroTurn(.2, 90, 5);
+                break;
+            case RUN_TO_WALL:
+                driveUsingTime(4, .4);
+                break;
+            case TURN_WITH_WALL:
+                gyroTurn(-.2, 0, 5);
+                break;
+            case FIND_WHITE_LINE:
+                runToWhiteLine(.05, .3);
+                break;
+            case PUSH_BEACON:
+                pushButton();
+                break;
+        }
+
+        /*
         if(backLeftMotor.getPower() == 0 && backRightMotor.getPower() == 0 && frontLeftMotor.getPower() == 0 && frontRightMotor.getPower() == 0)
         {
             sleep(1000);
@@ -116,6 +138,8 @@ public class AutonomousRed extends OpMode
             //Runs twice after reset of pushButtonTrigger in runToWhiteLine() method
             pushButton();
         }
+
+        */
     }
 
     public void sleep(long time)
@@ -135,14 +159,15 @@ public class AutonomousRed extends OpMode
             backRightMotor.setPower(0);
             frontRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
-            if(firstGyroTurnTrigger == false)
+            if(curState == BotState.TURN_TO_FACE_WALL)
             {
-                firstGyroTurnTrigger = true;
+                curState = BotState.RUN_TO_WALL;
             }
             else
             {
-                secondGyroTurnTrigger = true;
+                curState = BotState.FIND_WHITE_LINE;
             }
+            sleep(1000);
         }
         else
         {
@@ -215,15 +240,16 @@ public class AutonomousRed extends OpMode
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
             timeBeenSet = false;
-            if(driveUsingTimeTriggerFirst == false)
+            if(curState == BotState.RUN_TO_CAP_BALL)
             {
-                driveUsingTimeTriggerFirst = true;
+                curState = BotState.TURN_TO_FACE_WALL;
             }
             else
             {
-                driveUsingTimeTriggerSecond = true;
+                curState = BotState.TURN_WITH_WALL;
             }
             startMethodTime = 0;
+            sleep(1000);
         }
     }
 
@@ -236,8 +262,8 @@ public class AutonomousRed extends OpMode
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
             leftButtonPushServo.setPosition(.4);
-            pushButtonTrigger = true;
-            foundWhiteLineTrigger = false;
+            curState = BotState.FIND_WHITE_LINE;
+            sleep(1000);
         }
         else
         {
@@ -297,8 +323,8 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            foundWhiteLineTrigger = true;
-            pushButtonTrigger = false;
+            curState = BotState.PUSH_BEACON;
+            sleep(1000);
         }
         else
         {
@@ -306,7 +332,6 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
             frontLeftMotor.setPower(motorPower);
-            //alignFourMotorSpeed(backRightMotor, backLeftMotor, frontRightMotor, frontLeftMotor);
         }
     }
 
@@ -337,7 +362,7 @@ public class AutonomousRed extends OpMode
             whiskMotor.setPower(0);
             leftShootMotor.setPower(0);
             rightShootMotor.setPower(0);
-            shotParticles = true;
+            curState = BotState.RUN_TO_CAP_BALL;
         }
     }
 
