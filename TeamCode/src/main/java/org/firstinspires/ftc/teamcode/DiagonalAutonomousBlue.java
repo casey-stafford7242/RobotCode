@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 
 @Autonomous(name = "DiagonalAutonomous", group = "AUTONOMOUSCOOODOE")
-public class DiagonalAutonomousRed extends OpMode
+public class DiagonalAutonomousBlue extends OpMode
 {
     DcMotor backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor, whiskMotor, leftShootMotor, rightShootMotor;
     Servo leftButtonPushServo, rightButtonPushServo;
