@@ -31,7 +31,6 @@ public class AutonomousRed extends OpMode
     int currentCounts;
     private static final int MAX_MOTOR_RPM = 77;
     boolean speedCheckTrigger = false;
-    boolean pushButtonTrigger = false;
     double startMethodTime = 0;
     BotState curState;
 
@@ -109,9 +108,13 @@ public class AutonomousRed extends OpMode
 
     public void sleep(long time)
     {
-        try {
+        //For laziness and exception handling
+        try
+        {
             Thread.sleep(time);
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e)
+        {
             e.printStackTrace();
         }
     }
@@ -142,9 +145,6 @@ public class AutonomousRed extends OpMode
             frontRightMotor.setPower(-motorPower);
         }
     }
-
-
-
 
 
     public void alignWithWall()
