@@ -207,7 +207,7 @@ public class DiagonalAutonomousRed extends OpMode
 
     public void pushButton()
     {
-        if(rightButtonPushColorSensor.red() > rightButtonPushColorSensor.blue())
+        if(rightButtonPushColorSensor.blue() > rightButtonPushColorSensor.red())
         {
             backLeftMotor.setPower(0);
             backRightMotor.setPower(0);

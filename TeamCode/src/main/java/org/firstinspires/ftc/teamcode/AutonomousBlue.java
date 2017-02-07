@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name="AutonomousRed : Iterative", group = "Iterative OpMode")
-public class AutonomousRed extends OpMode
+public class AutonomousBlue extends OpMode
 {
     DcMotor backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor, whiskMotor, leftShootMotor, rightShootMotor;
     Servo leftButtonPushServo, rightButtonPushServo;
@@ -213,7 +213,7 @@ public class AutonomousRed extends OpMode
     {
         telemetry.addData("Red", rightButtonPushColorSensor.red());
         telemetry.addData("Blue", rightButtonPushColorSensor.blue());
-        if(rightButtonPushColorSensor.red() > rightButtonPushColorSensor.blue())
+        if(rightButtonPushColorSensor.blue() > rightButtonPushColorSensor.red())
         {
             backLeftMotor.setPower(0);
             backRightMotor.setPower(0);
