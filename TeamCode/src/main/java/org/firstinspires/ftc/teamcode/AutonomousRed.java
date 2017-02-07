@@ -18,14 +18,7 @@ public class AutonomousRed extends OpMode
     ColorSensor rightButtonPushColorSensor;
     GyroSensor gyro;
     OpticalDistanceSensor colorSensor;
-    boolean firstGyroTurnTrigger = false;
-    boolean secondGyroTurnTrigger = false;
-    boolean driveUsingTimeTriggerFirst = false;
-    boolean driveUsingTimeTriggerSecond = false;
-    boolean shotParticles = false;
-    boolean foundWhiteLineTrigger = false;
     boolean timeBeenSet = false;
-    boolean strafeUsingTimeTrigger = false;
     boolean buttonPressed = false;
     double speedCheckStartTime;
     int currentCounts;
@@ -74,7 +67,6 @@ public class AutonomousRed extends OpMode
         telemetry.addData("Color Sensor Green", rightButtonPushColorSensor.green());
         telemetry.addData("Light Val", colorSensor.getLightDetected());
         telemetry.addData("Gyro Heading", gyro.getHeading());
-
 
         switch (curState)
         {
@@ -172,14 +164,6 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            if(firstGyroTurnTrigger == false)
-            {
-                firstGyroTurnTrigger = true;
-            }
-            else
-            {
-                secondGyroTurnTrigger = true;
-            }
         }
     }
 
@@ -214,7 +198,6 @@ public class AutonomousRed extends OpMode
             {
                 curState = BotState.TURN_WITH_WALL;
             }
-            
             sleep(500);
         }
     }
