@@ -20,17 +20,12 @@ public class DiagonalAutonomousRed extends OpMode
     OpticalDistanceSensor colorSensor;
     boolean firstGyroTurnTrigger = false;
     boolean secondGyroTurnTrigger = false;
-    boolean driveUsingTimeTriggerFirst = false;
-    boolean driveUsingTimeTriggerSecond = false;
-    boolean shotParticles = false;
-    boolean foundWhiteLineTrigger = false;
     boolean timeBeenSet = false;
     boolean strafeUsingTimeTrigger = false;
     double speedCheckStartTime;
     int currentCounts;
     private static final int MAX_MOTOR_RPM = 77;
     boolean speedCheckTrigger = false;
-    boolean pushButtonTrigger = false;
     double startMethodTime = 0;
     BotState curState;
 
