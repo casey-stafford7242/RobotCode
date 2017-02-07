@@ -18,26 +18,19 @@ public class AutonomousRed extends OpMode
     ColorSensor rightButtonPushColorSensor;
     GyroSensor gyro;
     OpticalDistanceSensor colorSensor;
-    boolean firstGyroTurnTrigger = false;
-    boolean secondGyroTurnTrigger = false;
-    boolean driveUsingTimeTriggerFirst = false;
-    boolean driveUsingTimeTriggerSecond = false;
-    boolean shotParticles = false;
-    boolean foundWhiteLineTrigger = false;
     boolean timeBeenSet = false;
-    boolean strafeUsingTimeTrigger = false;
+    boolean buttonPressed = false;
     double speedCheckStartTime;
     int currentCounts;
     private static final int MAX_MOTOR_RPM = 77;
     boolean speedCheckTrigger = false;
-    boolean pushButtonTrigger = false;
     double startMethodTime = 0;
     BotState curState;
 
 
     public enum BotState
     {
-        SHOOT_PARTICLES, RUN_TO_CAP_BALL, TURN_TO_FACE_WALL, RUN_TO_WALL, TURN_WITH_WALL, FIND_WHITE_LINE, PUSH_BEACON
+        SHOOT_PARTICLES, RUN_TO_CAP_BALL, TURN_TO_FACE_WALL, RUN_TO_WALL, TURN_WITH_WALL, STRAFE_TO_WALL, FIND_WHITE_LINE, PUSH_BEACON
     }
 
     @Override
@@ -54,8 +47,8 @@ public class AutonomousRed extends OpMode
         rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
         whiskMotor = hardwareMap.dcMotor.get("whiskMotor");
         rightButtonPushColorSensor = hardwareMap.colorSensor.get("rightButtonPushColorSensor");
-        rightButtonPushServo.setPosition(1);
-        leftButtonPushServo.setPosition(0);
+        rightButtonPushServo.setPosition(0);
+        //leftButtonPushServo.setPosition(1);
        // leftTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "leftTouchSensor");
        // rightTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "rightTouchSensor");
         gyro = hardwareMap.gyroSensor.get("gyro");
@@ -75,26 +68,28 @@ public class AutonomousRed extends OpMode
         telemetry.addData("Light Val", colorSensor.getLightDetected());
         telemetry.addData("Gyro Heading", gyro.getHeading());
 
-
         switch (curState)
         {
             case SHOOT_PARTICLES:
                 shootParticles();
                 break;
             case RUN_TO_CAP_BALL:
-                driveUsingTime(4, .4);
+                driveUsingTime(1.5, .4);
                 break;
             case TURN_TO_FACE_WALL:
-                gyroTurn(.2, 90, 5);
+                gyroTurn(.2, 85, 5);
                 break;
             case RUN_TO_WALL:
-                driveUsingTime(4, .4);
+                driveUsingTime(1.5, .4);
                 break;
             case TURN_WITH_WALL:
-                gyroTurn(-.2, 0, 5);
+                gyroTurn(-.2, 0, 10);
+                break;
+            case STRAFE_TO_WALL:
+                strafeUsingTime(1, .575);
                 break;
             case FIND_WHITE_LINE:
-                runToWhiteLine(.05, .3);
+                runToWhiteLine(.05, .175);
                 break;
             case PUSH_BEACON:
                 pushButton();
@@ -105,9 +100,13 @@ public class AutonomousRed extends OpMode
 
     public void sleep(long time)
     {
-        try {
+        //For laziness and exception handling
+        try
+        {
             Thread.sleep(time);
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e)
+        {
             e.printStackTrace();
         }
     }
@@ -126,11 +125,18 @@ public class AutonomousRed extends OpMode
             }
             else
             {
-                curState = BotState.FIND_WHITE_LINE;
+                curState = BotState.STRAFE_TO_WALL;
             }
-            sleep(1000);
+            sleep(500);
         }
-        else
+        else if (gyro.getHeading() > gyroTarget + TOLERANCE)
+        {
+            backLeftMotor.setPower(-motorPower);
+            backRightMotor.setPower(motorPower);
+            frontLeftMotor.setPower(-motorPower);
+            frontRightMotor.setPower(motorPower);
+        }
+        else if (gyro.getHeading() < gyroTarget - TOLERANCE)
         {
             backLeftMotor.setPower(motorPower);
             backRightMotor.setPower(-motorPower);
@@ -138,9 +144,6 @@ public class AutonomousRed extends OpMode
             frontRightMotor.setPower(-motorPower);
         }
     }
-
-
-
 
 
     public void alignWithWall()
@@ -168,14 +171,6 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            if(firstGyroTurnTrigger == false)
-            {
-                firstGyroTurnTrigger = true;
-            }
-            else
-            {
-                secondGyroTurnTrigger = true;
-            }
         }
     }
 
@@ -200,6 +195,7 @@ public class AutonomousRed extends OpMode
             backRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
+            startMethodTime = 0;
             timeBeenSet = false;
             if(curState == BotState.RUN_TO_CAP_BALL)
             {
@@ -209,26 +205,28 @@ public class AutonomousRed extends OpMode
             {
                 curState = BotState.TURN_WITH_WALL;
             }
-            startMethodTime = 0;
-            sleep(1000);
+            sleep(500);
         }
     }
 
     public void pushButton()
     {
+        telemetry.addData("Red", rightButtonPushColorSensor.red());
+        telemetry.addData("Blue", rightButtonPushColorSensor.blue());
         if(rightButtonPushColorSensor.red() > rightButtonPushColorSensor.blue())
         {
             backLeftMotor.setPower(0);
             backRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            leftButtonPushServo.setPosition(.4);
+            rightButtonPushServo.setPosition(.3);
             curState = BotState.FIND_WHITE_LINE;
-            sleep(1000);
+            sleep(500);
+            buttonPressed = true;
         }
         else
         {
-            driveUsingTime(3, .3);
+            driveUsingTime(2, .15);
         }
     }
 
@@ -242,9 +240,9 @@ public class AutonomousRed extends OpMode
         if(timeBeenSet == true && time < startMethodTime + timeCheck)
         {
             backLeftMotor.setPower(-motorPower);
-            backRightMotor.setPower(motorPower);
+            backRightMotor.setPower(0);
             frontLeftMotor.setPower(motorPower);
-            frontRightMotor.setPower(-motorPower);
+            frontRightMotor.setPower(0);
             //alignFourMotorSpeed(backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor);
 
         }
@@ -256,7 +254,14 @@ public class AutonomousRed extends OpMode
             frontRightMotor.setPower(0);
             timeBeenSet = false;
             startMethodTime = 0;
-            strafeUsingTimeTrigger = true;
+            if(gyro.getHeading() > 5)
+            {
+                frontLeftMotor.setPower(-.2);
+                frontRightMotor.setPower(.2);
+                backLeftMotor.setPower(-.2);
+                backRightMotor.setPower(.2);
+            }
+            curState = BotState.FIND_WHITE_LINE;
         }
     }
 
@@ -284,8 +289,9 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
+            buttonPressed = false;
             curState = BotState.PUSH_BEACON;
-            sleep(1000);
+            sleep(500);
         }
         else
         {
@@ -293,6 +299,10 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
             frontLeftMotor.setPower(motorPower);
+            if(buttonPressed == true)
+            {
+                rightButtonPushServo.setPosition(0);
+            }
         }
     }
 
@@ -302,23 +312,68 @@ public class AutonomousRed extends OpMode
         {
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
-            alignMotorSpeed(leftShootMotor, rightShootMotor);
+            if(motorSpeed(leftShootMotor) > motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
+                leftShootMotor.setPower(leftShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+                rightShootMotor.setPower(rightShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+            }
+            else if (motorSpeed(leftShootMotor) < motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
+                rightShootMotor.setPower(rightShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(rightShootMotor)) - rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+                leftShootMotor.setPower(leftShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(rightShootMotor)) + rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+            }
+            else
+            {
+                telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
+            }
         }
-        if(time <= 4 && time > 3)
+        if(time <= 3.5 && time > 3)
         {
             whiskMotor.setPower(1);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
-            alignMotorSpeed(leftShootMotor, rightShootMotor);
+            if(motorSpeed(leftShootMotor) > motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
+                leftShootMotor.setPower(leftShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+                rightShootMotor.setPower(rightShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+            }
+            else if (motorSpeed(leftShootMotor) < motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
+                rightShootMotor.setPower(rightShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(rightShootMotor)) - rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+                leftShootMotor.setPower(leftShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(rightShootMotor)) + rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+            }
+            else
+            {
+                telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
+            }
         }
-        if(time > 4 && time <= 6)
+        if(time > 3.5 && time <= 5)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
-            alignMotorSpeed(leftShootMotor, rightShootMotor);
+            if(motorSpeed(leftShootMotor) > motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
+                leftShootMotor.setPower(leftShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+                rightShootMotor.setPower(rightShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+            }
+            else if (motorSpeed(leftShootMotor) < motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
+                rightShootMotor.setPower(rightShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(rightShootMotor)) - rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+                leftShootMotor.setPower(leftShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(rightShootMotor)) + rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+            }
+            else
+            {
+                telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
+            }
         }
-        if(time > 6)
+        if(time > 5)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(0);
