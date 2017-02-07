@@ -30,7 +30,7 @@ public class AutonomousRed extends OpMode
 
     public enum BotState
     {
-        SHOOT_PARTICLES, RUN_TO_CAP_BALL, TURN_TO_FACE_WALL, RUN_TO_WALL, TURN_WITH_WALL, STRAFE_TO_WALL,  FIND_WHITE_LINE, PUSH_BEACON
+        SHOOT_PARTICLES, RUN_TO_CAP_BALL, TURN_TO_FACE_WALL, RUN_TO_WALL, TURN_WITH_WALL, STRAFE_TO_WALL, FIND_WHITE_LINE, PUSH_BEACON
     }
 
     @Override
@@ -129,7 +129,14 @@ public class AutonomousRed extends OpMode
             }
             sleep(500);
         }
-        else
+        else if (gyro.getHeading() > gyroTarget + TOLERANCE)
+        {
+            backLeftMotor.setPower(-motorPower);
+            backRightMotor.setPower(motorPower);
+            frontLeftMotor.setPower(-motorPower);
+            frontRightMotor.setPower(motorPower);
+        }
+        else if (gyro.getHeading() < gyroTarget - TOLERANCE)
         {
             backLeftMotor.setPower(motorPower);
             backRightMotor.setPower(-motorPower);
@@ -247,6 +254,13 @@ public class AutonomousRed extends OpMode
             frontRightMotor.setPower(0);
             timeBeenSet = false;
             startMethodTime = 0;
+            if(gyro.getHeading() > 5)
+            {
+                frontLeftMotor.setPower(-.2);
+                frontRightMotor.setPower(.2);
+                backLeftMotor.setPower(-.2);
+                backRightMotor.setPower(.2);
+            }
             curState = BotState.FIND_WHITE_LINE;
         }
     }
