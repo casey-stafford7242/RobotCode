@@ -26,6 +26,7 @@ public class AutonomousRed extends OpMode
     boolean foundWhiteLineTrigger = false;
     boolean timeBeenSet = false;
     boolean strafeUsingTimeTrigger = false;
+    boolean buttonPressed = false;
     double speedCheckStartTime;
     int currentCounts;
     private static final int MAX_MOTOR_RPM = 77;
@@ -231,6 +232,7 @@ public class AutonomousRed extends OpMode
             rightButtonPushServo.setPosition(.3);
             curState = BotState.FIND_WHITE_LINE;
             sleep(500);
+            buttonPressed = true;
         }
         else
         {
@@ -290,6 +292,7 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
+            buttonPressed = false;
             curState = BotState.PUSH_BEACON;
             sleep(500);
         }
@@ -299,6 +302,10 @@ public class AutonomousRed extends OpMode
             backLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
             frontLeftMotor.setPower(motorPower);
+            if(buttonPressed == true)
+            {
+                rightButtonPushServo.setPosition(0);
+            }
         }
     }
 
@@ -306,23 +313,70 @@ public class AutonomousRed extends OpMode
     {
         if(time <= 3)
         {
-            leftShootMotor.setPower(.225);
-            rightShootMotor.setPower(.225);
-            alignMotorSpeed(leftShootMotor, rightShootMotor);
+            leftShootMotor.setPower(.25);
+            rightShootMotor.setPower(.25);
+            if(motorSpeed(leftShootMotor) > motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
+                leftShootMotor.setPower(leftShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+                rightShootMotor.setPower(rightShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+            }
+            else if (motorSpeed(leftShootMotor) < motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
+                rightShootMotor.setPower(rightShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(rightShootMotor)) - rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+                leftShootMotor.setPower(leftShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(rightShootMotor)) + rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+            }
+            else
+            {
+                telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
+            }
         }
-        if(time <= 4 && time > 3)
+        if(time <= 3.5 && time > 3)
         {
             whiskMotor.setPower(1);
-            leftShootMotor.setPower(.225);
-            rightShootMotor.setPower(.225);
+            leftShootMotor.setPower(.25);
+            rightShootMotor.setPower(.25);
+            if(motorSpeed(leftShootMotor) > motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
+                leftShootMotor.setPower(leftShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+                rightShootMotor.setPower(rightShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+            }
+            else if (motorSpeed(leftShootMotor) < motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
+                rightShootMotor.setPower(rightShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(rightShootMotor)) - rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+                leftShootMotor.setPower(leftShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(rightShootMotor)) + rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+            }
+            else
+            {
+                telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
+            }
         }
-        if(time > 4 && time <= 6)
+        if(time > 3.5 && time <= 5)
         {
             whiskMotor.setPower(0);
-            leftShootMotor.setPower(.225);
-            rightShootMotor.setPower(.225);
+            leftShootMotor.setPower(.25);
+            rightShootMotor.setPower(.25);
+            if(motorSpeed(leftShootMotor) > motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
+                leftShootMotor.setPower(leftShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+                rightShootMotor.setPower(rightShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(leftShootMotor)) - rpmToPowerConverter(motorSpeed(rightShootMotor))) / 2));
+            }
+            else if (motorSpeed(leftShootMotor) < motorSpeed(rightShootMotor))
+            {
+                telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
+                rightShootMotor.setPower(rightShootMotor.getPower() - ((rpmToPowerConverter(motorSpeed(rightShootMotor)) - rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+                leftShootMotor.setPower(leftShootMotor.getPower() + ((rpmToPowerConverter(motorSpeed(rightShootMotor)) + rpmToPowerConverter(motorSpeed(leftShootMotor))) / 2));
+            }
+            else
+            {
+                telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
+            }
         }
-        if(time > 6)
+        if(time > 5)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(0);
