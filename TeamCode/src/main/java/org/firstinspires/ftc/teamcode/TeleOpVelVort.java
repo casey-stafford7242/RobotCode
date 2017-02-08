@@ -48,6 +48,7 @@ public class TeleOpVelVort extends OpMode
         leftShootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        whiskMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         gyro.calibrate();
     }
 
