@@ -65,12 +65,14 @@ public class DiagonalAutonomousRed extends OpMode
                 shootParticles();
                 break;
             case INITIAL_TURN:
+                //Turn 45 Degrees Counter-Clockwise
                 gyroTurn(-.3, 315, 5);
                 break;
             case DRIVE_TO_WALL:
                 driveUsingTime(2, .5);
                 break;
             case TURNS_WITH_WALL:
+                //Turn to realign with the wall
                 gyroTurn(.3, 0, 5);
                 break;
             case FIND_WHITE_LINE:
@@ -126,35 +128,6 @@ public class DiagonalAutonomousRed extends OpMode
             backRightMotor.setPower(-motorPower);
             frontLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(-motorPower);
-        }
-    }
-
-
-    public void alignWithWall()
-    {
-        if(gyro.getHeading() > 180)
-        {
-            backLeftMotor.setPower(.2);
-            frontLeftMotor.setPower(.2);
-            backRightMotor.setPower(-.2);
-            frontRightMotor.setPower(-.2);
-            //alignFourMotorSpeed(backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor);
-        }
-        else if (gyro.getHeading() < 180 && gyro.getHeading() > 0)
-        {
-            backRightMotor.setPower(.2);
-            frontRightMotor.setPower(.2);
-            backLeftMotor.setPower(-.2);
-            frontLeftMotor.setPower(-.2);
-            //alignFourMotorSpeed(backRightMotor, frontRightMotor, backLeftMotor, frontLeftMotor);
-        }
-
-        if(gyro.getHeading() == 0)
-        {
-            backRightMotor.setPower(0);
-            backLeftMotor.setPower(0);
-            frontLeftMotor.setPower(0);
-            frontRightMotor.setPower(0);
         }
     }
 
