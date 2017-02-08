@@ -287,7 +287,7 @@ public class DiagonalAutonomousRed extends OpMode
             frontLeftMotor.setPower(motorPower);
             if(buttonPressed == true)
             {
-                leftButtonPushServo.setPosition(0);
+                leftButtonPushServo.setPosition(1);
             }
         }
     }
