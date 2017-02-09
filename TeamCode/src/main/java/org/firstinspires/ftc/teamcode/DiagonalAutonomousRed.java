@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import org.firstinspires.ftc.teamcode.ExternalTeamCode.ServoChecker;
 
 
 public class DiagonalAutonomousRed extends OpMode
@@ -23,7 +24,10 @@ public class DiagonalAutonomousRed extends OpMode
     private static final int MAX_MOTOR_RPM = 77;
     boolean speedCheckTrigger = false;
     double startMethodTime = 0;
+    double leftServoOutPosition = .7;
+    double leftServoInPosition = 1;
     BotState curState;
+    ServoChecker servoChecker;
 
 
     public enum BotState
@@ -160,7 +164,7 @@ public class DiagonalAutonomousRed extends OpMode
             }
             else
             {
-
+                //TODO::: ADD DRIVE_TO_CAP_BALL HERE ONCE WE CREATE IT
             }
             sleep(500);
         }
@@ -176,10 +180,11 @@ public class DiagonalAutonomousRed extends OpMode
             backRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            leftButtonPushServo.setPosition(.7);
-            curState = BotState.FIND_WHITE_LINE;
-            sleep(500);
-            buttonPressed = true;
+            leftButtonPushServo.setPosition(leftServoOutPosition);
+            if(servoChecker.continuousServoPositionChecker(leftButtonPushServo) < .05)
+            {
+                curState = BotState.FIND_WHITE_LINE;
+            }
         }
         else
         {
@@ -241,9 +246,9 @@ public class DiagonalAutonomousRed extends OpMode
             backLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
             frontLeftMotor.setPower(motorPower);
-            if(buttonPressed == true)
+            if(leftButtonPushServo.getPosition() <= leftServoOutPosition)
             {
-                leftButtonPushServo.setPosition(1);
+                leftButtonPushServo.setPosition(leftServoInPosition);
             }
         }
     }

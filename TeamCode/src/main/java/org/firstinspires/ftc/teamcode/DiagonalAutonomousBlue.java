@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import org.firstinspires.ftc.teamcode.ExternalTeamCode.ServoChecker;
 
 
 @Autonomous(name = "DiagonalAutonomous", group = "AUTONOMOUSCOOODOE")
@@ -18,16 +19,16 @@ public class DiagonalAutonomousBlue extends OpMode
     ColorSensor rightButtonPushColorSensor;
     GyroSensor gyro;
     OpticalDistanceSensor colorSensor;
-    boolean firstGyroTurnTrigger = false;
-    boolean secondGyroTurnTrigger = false;
     boolean timeBeenSet = false;
-    boolean strafeUsingTimeTrigger = false;
     double speedCheckStartTime;
+    double rightServoOutPosition = .4;
+    double rightServoInPosition = 0;
     int currentCounts;
     private static final int MAX_MOTOR_RPM = 77;
     boolean speedCheckTrigger = false;
     double startMethodTime = 0;
     BotState curState;
+    ServoChecker servoChecker;
 
 
     public enum BotState
@@ -49,8 +50,7 @@ public class DiagonalAutonomousBlue extends OpMode
         rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
         whiskMotor = hardwareMap.dcMotor.get("whiskMotor");
         rightButtonPushColorSensor = hardwareMap.colorSensor.get("rightButtonPushColorSensor");
-        rightButtonPushServo.setPosition(1);
-        leftButtonPushServo.setPosition(0);
+        rightButtonPushServo.setPosition(rightServoInPosition);
         // leftTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "leftTouchSensor");
         // rightTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "rightTouchSensor");
         gyro = hardwareMap.gyroSensor.get("gyro");
@@ -132,44 +132,6 @@ public class DiagonalAutonomousBlue extends OpMode
 
 
 
-
-
-    public void alignWithWall()
-    {
-        if(gyro.getHeading() > 180)
-        {
-            backLeftMotor.setPower(.2);
-            frontLeftMotor.setPower(.2);
-            backRightMotor.setPower(-.2);
-            frontRightMotor.setPower(-.2);
-            //alignFourMotorSpeed(backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor);
-        }
-        else if (gyro.getHeading() < 180 && gyro.getHeading() > 0)
-        {
-            backRightMotor.setPower(.2);
-            frontRightMotor.setPower(.2);
-            backLeftMotor.setPower(-.2);
-            frontLeftMotor.setPower(-.2);
-            //alignFourMotorSpeed(backRightMotor, frontRightMotor, backLeftMotor, frontLeftMotor);
-        }
-
-        if(gyro.getHeading() == 0)
-        {
-            backRightMotor.setPower(0);
-            backLeftMotor.setPower(0);
-            frontLeftMotor.setPower(0);
-            frontRightMotor.setPower(0);
-            if(firstGyroTurnTrigger == false)
-            {
-                firstGyroTurnTrigger = true;
-            }
-            else
-            {
-                secondGyroTurnTrigger = true;
-            }
-        }
-    }
-
     public void driveUsingTime(double timeCheck, double motorPower)
     {
         if(startMethodTime == 0 && timeBeenSet == false)
@@ -213,9 +175,11 @@ public class DiagonalAutonomousBlue extends OpMode
             backRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            leftButtonPushServo.setPosition(.4);
-            curState = BotState.FIND_WHITE_LINE;
-            sleep(1000);
+            rightButtonPushServo.setPosition(rightServoOutPosition);
+            if(servoChecker.continuousServoPositionChecker(rightButtonPushServo) < .05)
+            {
+                curState = BotState.FIND_WHITE_LINE;
+            }
         }
         else
         {
@@ -247,7 +211,6 @@ public class DiagonalAutonomousBlue extends OpMode
             frontRightMotor.setPower(0);
             timeBeenSet = false;
             startMethodTime = 0;
-            strafeUsingTimeTrigger = true;
         }
     }
 
@@ -269,6 +232,10 @@ public class DiagonalAutonomousBlue extends OpMode
 
     public void runToWhiteLine(double driveUsingTimeTriggerVal, double motorPower)
     {
+        if(rightButtonPushServo.getPosition() > rightServoInPosition)
+        {
+            rightButtonPushServo.setPosition(rightServoInPosition);
+        }
         if(colorSensor.getLightDetected() > driveUsingTimeTriggerVal)
         {
             if(gyro.getHeading() > 3)
