@@ -49,19 +49,19 @@ public class NineOneNoOne extends OpMode
         //sets the drive motors power
         left.setPower(gamepad1.left_stick_y);
         right.setPower(gamepad1.right_stick_y);
-        if(gamepad1.a == true && gamepad1.b == false && gamepad1.x == false && gamepad1.y == false)
+        if(gamepad1.a == true )
         {
             servoLeft.setPosition(.5);
         }
-        if(gamepad1.a == false && gamepad1.b == true && gamepad1.x == false && gamepad1.y == false)
+        if(gamepad1.b == true)
         {
             servoLeft.setPosition(0);
         }
-        if(gamepad1.a == false && gamepad1.b == false && gamepad1.x == true && gamepad1.y == false)
+        if(gamepad1.x == true)
         {
             servoRight.setPosition(.5);
         }
-        if(gamepad1.a == false && gamepad1.b == false && gamepad1.x == false && gamepad1.y == true)
+        if(gamepad1.y == true)
         {
             servoRight.setPosition(0);
         }
