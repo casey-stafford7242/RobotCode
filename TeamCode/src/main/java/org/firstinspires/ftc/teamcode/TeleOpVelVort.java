@@ -167,17 +167,17 @@ public class TeleOpVelVort extends OpMode
         if (gamepad1.right_bumper && gamepad1.left_stick_y != 0)
         {
             frontLeftMotor.setPower(0);
-            frontRightMotor.setPower(gamepad1.left_stick_y);
-            backLeftMotor.setPower(gamepad1.left_stick_y);
+            frontRightMotor.setPower(-gamepad1.left_stick_y);
+            backLeftMotor.setPower(-gamepad1.left_stick_y);
             //alignMotorSpeed(frontRightMotor, backLeftMotor);
             backRightMotor.setPower(0);
         }
         // Negative slope diagonal
         else if (gamepad1.left_bumper && gamepad1.left_stick_y != 0)
         {
-            frontLeftMotor.setPower(gamepad1.left_stick_y);
+            frontLeftMotor.setPower(-gamepad1.left_stick_y);
             frontRightMotor.setPower(0);
-            backRightMotor.setPower(gamepad1.left_stick_y);
+            backRightMotor.setPower(-gamepad1.left_stick_y);
             //alignMotorSpeed(frontLeftMotor, backRightMotor);
             backLeftMotor.setPower(0);
         }
@@ -185,10 +185,10 @@ public class TeleOpVelVort extends OpMode
         // FORWARD / BACKWARD
         if (gamepad1.left_stick_y != 0 && gamepad1.left_bumper == false && gamepad1.right_bumper == false && gamepad1.b == false)
         {
-            frontRightMotor.setPower(gamepad1.left_stick_y);
-            backRightMotor.setPower(gamepad1.left_stick_y);
-            frontLeftMotor.setPower(gamepad1.left_stick_y);
-            backLeftMotor.setPower(gamepad1.left_stick_y);
+            frontRightMotor.setPower(-gamepad1.left_stick_y);
+            backRightMotor.setPower(-gamepad1.left_stick_y);
+            frontLeftMotor.setPower(-gamepad1.left_stick_y);
+            backLeftMotor.setPower(-gamepad1.left_stick_y);
             //alignFourMotorSpeed(frontRightMotor, backRightMotor, frontLeftMotor, backLeftMotor);
         }
         //STOP

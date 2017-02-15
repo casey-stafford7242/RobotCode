@@ -91,13 +91,13 @@ public class DiagonalAutonomousBlue extends OpMode
                 shootParticles();
                 break;
             case INITIAL_TURN:
-                gyroTurn(.2, 40, 5);
+                gyroTurn(.2, 85, 5);
                 break;
             case DRIVE_TO_WALL:
-                driveUsingEncoders(3100, .375);
+                driveUsingEncoders(2800, .375);
                 break;
             case TURNS_WITH_WALL:
-                gyroTurn(-.5, 0, 7);
+                gyroTurn(-.5, 0, 5);
                 break;
             case FIND_WHITE_LINE:
                 runToWhiteLine(.05, .175);
@@ -194,6 +194,7 @@ public class DiagonalAutonomousBlue extends OpMode
             frontRightMotor.setPower(motorPower);
             rightButtonPushServo.setPosition(rightServoInPosition);
         }
+
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
         frontLeftMotor.setPower(0);
@@ -314,21 +315,21 @@ public class DiagonalAutonomousBlue extends OpMode
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time <=  startMethodTime + 4.5 && time > startMethodTime + 3)
+        if(time <=  startMethodTime + 5 && time > startMethodTime + 3)
         {
             whiskMotor.setPower(-1);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time > startMethodTime + 4.5 && time  <= startMethodTime + 6)
+        if(time > startMethodTime + 5 && time  <= startMethodTime + 7)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time > startMethodTime + 6)
+        if(time > startMethodTime + 7)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(0);
