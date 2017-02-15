@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -18,7 +19,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class NONOAuto extends OpMode
 
 {
-    DcMotor leftDrive;
+    DcMotor leftDrive, leftShootMotor, rightShootMotor, intakeMotor;
     DcMotor rightDrive;
     Servo servo;
     ModernRoboticsI2cGyro gyro;
@@ -40,7 +41,7 @@ public class NONOAuto extends OpMode
 
     public enum BotState
     {
-        DRIVE_FORWARD, FIRST_GYRO_TURN, SECOND_DRIVE_FORWARD, SECOND_GYRO_TURN, FIND_COLOR
+        DRIVE_FORWARD, FIRST_GYRO_TURN, SECOND_DRIVE_FORWARD, SECOND_GYRO_TURN, FIND_COLOR, SHOOT_PARTICLES
     }
 
     @Override
@@ -48,6 +49,9 @@ public class NONOAuto extends OpMode
     {
         leftDrive = hardwareMap.dcMotor.get("leftDrive");
         rightDrive = hardwareMap.dcMotor.get("rightDrive");
+        leftShootMotor = hardwareMap.dcMotor.get("leftShootMotor");
+        rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
+        intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
         servo = hardwareMap.servo.get("servo");
         colorsensor = hardwareMap.get(ModernRoboticsI2cColorSensor.class, "colorSensor");
         rightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -67,6 +71,8 @@ public class NONOAuto extends OpMode
             case DRIVE_FORWARD:
                 runDriveMotors(2000, .5);
                 break;
+            case SHOOT_PARTICLES:
+                shootParticles();
             case FIRST_GYRO_TURN:
                 gyroTurn(270, .3, 5);
                 break;
@@ -97,6 +103,21 @@ public class NONOAuto extends OpMode
         rightDrive.setPower(0);
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public void shootParticles()
+    {
+        leftShootMotor.setPower(1);
+        rightShootMotor.setPower(-1);
+        intakeMotor.setPower(1);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void gyroTurn(int gyroTarget, double motorPower, int TOLERANCE)
