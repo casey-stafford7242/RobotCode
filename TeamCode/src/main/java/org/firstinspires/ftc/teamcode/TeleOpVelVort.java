@@ -104,6 +104,11 @@ public class TeleOpVelVort extends OpMode
             rightShootMotor.setPower(-.15);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
+        if(gamepad2.b==true)
+        {
+            leftShootMotor.setPower(-.15);
+            rightShootMotor.setPower(.15);
+        }
         if (gamepad2.x==true)
         {
             leftShootMotor.setPower(.2);
