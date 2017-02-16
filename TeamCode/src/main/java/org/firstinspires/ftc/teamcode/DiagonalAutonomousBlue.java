@@ -79,25 +79,28 @@ public class DiagonalAutonomousBlue extends OpMode
         telemetry.addData("Red", rightButtonPushColorSensor.red());
         telemetry.addData("Blue", rightButtonPushColorSensor.blue());
         telemetry.addData("Green", rightButtonPushColorSensor.green());
-        telemetry.addData("StartMethodTimer", startMethodTime);
-        telemetry.addData("Thyme", time);
+        telemetry.addData("BackLeftMotorPos", backLeftMotor.getCurrentPosition());
+        telemetry.addData("BackRightMotorPos", backRightMotor.getCurrentPosition());
+        telemetry.addData("FrontLeftMotorPos", frontLeftMotor.getCurrentPosition());
+        telemetry.addData("FrontRightMotorPos", frontRightMotor.getCurrentPosition());
+        telemetry.addData("Gyro Heading", gyro.getHeading());
 
         switch(curState)
         {
             case INITIAL_DRIVE_FORWARD:
-                driveUsingEncoders(1300, .375);
+                driveUsingEncoders(1500, .5);
                 break;
             case SHOOT_PARTICLES:
                 shootParticles();
                 break;
             case INITIAL_TURN:
-                gyroTurn(.2, 85, 5);
+                gyroTurn(.2, 42, 5);
                 break;
             case DRIVE_TO_WALL:
-                driveUsingEncoders(2800, .375);
+                driveUsingEncoders(2500, .5);
                 break;
             case TURNS_WITH_WALL:
-                gyroTurn(-.5, 0, 5);
+                gyroTurn(-.43, 355, 5);
                 break;
             case FIND_WHITE_LINE:
                 runToWhiteLine(.05, .175);
@@ -164,7 +167,6 @@ public class DiagonalAutonomousBlue extends OpMode
                 frontLeftMotor.setPower(0);
                 frontRightMotor.setPower(0);
             }
-
         }
     }
 
@@ -179,6 +181,8 @@ public class DiagonalAutonomousBlue extends OpMode
 
     public void driveUsingEncoders(int encoderTarget, double motorPower)
     {
+        updateTelemetry(telemetry);
+
         setDriveMotorModes(DcMotor.RunMode.RUN_TO_POSITION);
 
         frontRightMotor.setTargetPosition(encoderTarget);
@@ -188,28 +192,29 @@ public class DiagonalAutonomousBlue extends OpMode
 
         while(backLeftMotor.isBusy() && frontLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy())
         {
-            backLeftMotor.setPower(motorPower + .1);
+            backLeftMotor.setPower(motorPower);
             backRightMotor.setPower(motorPower);
-            frontLeftMotor.setPower(motorPower + .1);
+            frontLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
-            rightButtonPushServo.setPosition(rightServoInPosition);
         }
-
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        setDriveMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        sleep(1000);
-        if(curState == BotState.DRIVE_TO_WALL)
+        if(backLeftMotor.getCurrentPosition() >= backLeftMotor.getTargetPosition() && frontLeftMotor.getCurrentPosition() >= frontLeftMotor.getTargetPosition() && backRightMotor.getCurrentPosition() >= backRightMotor.getTargetPosition() && frontRightMotor.getCurrentPosition() >= frontRightMotor.getTargetPosition())
         {
-            curState = BotState.TURNS_WITH_WALL;
+            backLeftMotor.setPower(0);
+            backRightMotor.setPower(0);
+            frontLeftMotor.setPower(0);
+            frontRightMotor.setPower(0);
+            setDriveMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            sleep(1000);
+            if(curState == BotState.DRIVE_TO_WALL)
+            {
+                curState = BotState.TURNS_WITH_WALL;
+            }
+            else if (curState == BotState.INITIAL_DRIVE_FORWARD)
+            {
+                curState = BotState.SHOOT_PARTICLES;
+            }
+            startMethodTime = 0;
         }
-        else if (curState == BotState.INITIAL_DRIVE_FORWARD)
-        {
-            curState = BotState.SHOOT_PARTICLES;
-        }
-        startMethodTime = 0;
     }
 
 
@@ -315,21 +320,21 @@ public class DiagonalAutonomousBlue extends OpMode
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time <=  startMethodTime + 5 && time > startMethodTime + 3)
+        if(time <=  startMethodTime + 4 && time > startMethodTime + 3)
         {
             whiskMotor.setPower(-1);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time > startMethodTime + 5 && time  <= startMethodTime + 7)
+        if(time > startMethodTime + 4 && time  <= startMethodTime + 6)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time > startMethodTime + 7)
+        if(time > startMethodTime + 6)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(0);
