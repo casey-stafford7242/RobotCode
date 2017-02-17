@@ -4,41 +4,46 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.ExternalTeamCode.ServoChecker;
 
-@Autonomous(name = "DiagonalAutonomousRed", group = "DiagAutonomous")
+
+@Autonomous(name = "DiagonalAutonomousRed", group = "AUTONOMOUSCOOODOE")
 public class DiagonalAutonomousRed extends OpMode
 {
     DcMotor backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor, whiskMotor, leftShootMotor, rightShootMotor;
-    Servo leftButtonPushServo;
+    DcMotorController frontDriveMotorController, backDriveMotorController;
+    Servo  leftButtonPushServo;
     ColorSensor leftButtonPushColorSensor;
     GyroSensor gyro;
     OpticalDistanceSensor colorSensor;
     boolean timeBeenSet = false;
-    boolean buttonPressed = false;
     double speedCheckStartTime;
+    double rightServoOutPosition = .5;
+    double rightServoInPosition = 1;
     int currentCounts;
     private static final int MAX_MOTOR_RPM = 77;
     boolean speedCheckTrigger = false;
+    boolean firstBeaconPressed = false;
+    boolean secondBeaconPressed = false;
     double startMethodTime = 0;
-    double leftServoOutPosition = .7;
-    double leftServoInPosition = 1;
     BotState curState;
-    ServoChecker servoChecker;
 
 
     public enum BotState
     {
-        SHOOT_PARTICLES, INITIAL_TURN, DRIVE_TO_WALL, TURNS_WITH_WALL, FIND_WHITE_LINE, PUSH_BUTTON
+        INITIAL_DRIVE_FORWARD, SHOOT_PARTICLES, INITIAL_TURN, DRIVE_TO_WALL, TURNS_WITH_WALL,  FIND_WHITE_LINE, PUSH_BUTTON, GET_OFF_WHITE_LINE
     }
 
     @Override
     public void init()
     {
+        frontDriveMotorController = hardwareMap.dcMotorController.get("Front Motors");
+        backDriveMotorController = hardwareMap.dcMotorController.get("Back Motors");
         frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
         backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
@@ -49,49 +54,67 @@ public class DiagonalAutonomousRed extends OpMode
         rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
         whiskMotor = hardwareMap.dcMotor.get("whiskMotor");
         leftButtonPushColorSensor = hardwareMap.colorSensor.get("leftButtonPushColorSensor");
-        //rightButtonPushServo.setPosition(0);
-        leftButtonPushServo.setPosition(1);
+        leftButtonPushServo.setPosition(rightServoInPosition);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // leftTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "leftTouchSensor");
         // rightTouchSensor = hardwareMap.get(ModernRoboticsDigitalTouchSensor.class, "rightTouchSensor");
         gyro = hardwareMap.gyroSensor.get("gyro");
         gyro.calibrate();
+        leftButtonPushColorSensor.enableLed(true);
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightShootMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        curState = BotState.SHOOT_PARTICLES;
+        curState = BotState.INITIAL_DRIVE_FORWARD;
     }
 
     @Override
     public void loop()
     {
-        switch (curState)
+        telemetry.addData("Red", leftButtonPushColorSensor.red());
+        telemetry.addData("Blue", leftButtonPushColorSensor.blue());
+        telemetry.addData("Green", leftButtonPushColorSensor.green());
+        telemetry.addData("BackRightEncoders", backRightMotor.getCurrentPosition());
+        telemetry.addData("BackLeftEncoders", backLeftMotor.getCurrentPosition());
+        telemetry.addData("FrontRightEncoders", frontRightMotor.getCurrentPosition());
+        telemetry.addData("FrontLeftEncoders", frontLeftMotor.getCurrentPosition());
+        telemetry.addData("Light Sensor", colorSensor.getLightDetected());
+        telemetry.addData("Gyro Heading", gyro.getHeading());
+
+        switch(curState)
         {
+            case INITIAL_DRIVE_FORWARD:
+                driveUsingEncoders(1350, .7);
+                break;
             case SHOOT_PARTICLES:
                 shootParticles();
                 break;
             case INITIAL_TURN:
-                //Turn 45 Degrees Counter-Clockwise
-                gyroTurn(-.3, 315, 5);
+                gyroTurn(-.2, 318, 4);
                 break;
             case DRIVE_TO_WALL:
-                driveUsingTime(2, .5);
+                driveUsingEncoders(2000, .7);
                 break;
             case TURNS_WITH_WALL:
-                //Turn to realign with the wall
-                gyroTurn(.3, 0, 5);
+                gyroTurn(.4, 23, 4);
                 break;
             case FIND_WHITE_LINE:
-                runToWhiteLine(.05, .3);
+                runToWhiteLine(.05, .175);
                 break;
             case PUSH_BUTTON:
                 pushButton();
                 break;
+            case GET_OFF_WHITE_LINE:
+                driveUsingEncoders(1000, .2);
+                break;
         }
+
     }
 
     public void sleep(long time)
     {
-        //Faster than writing the exception handling each time
         try
         {
             Thread.sleep(time);
@@ -104,92 +127,126 @@ public class DiagonalAutonomousRed extends OpMode
 
     public void gyroTurn(double motorPower, int gyroTarget, int TOLERANCE)
     {
+        if(backRightMotor.getMode() != DcMotor.RunMode.RUN_WITHOUT_ENCODER && backLeftMotor.getMode() != DcMotor.RunMode.RUN_WITHOUT_ENCODER && frontLeftMotor.getMode() != DcMotor.RunMode.RUN_WITHOUT_ENCODER && frontRightMotor.getMode() != DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        {
+            setDriveMotorModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
         if(gyro.getHeading() < gyroTarget + TOLERANCE && gyro.getHeading() > gyroTarget - TOLERANCE)
         {
             backLeftMotor.setPower(0);
             backRightMotor.setPower(0);
             frontRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
+            sleep(500);
+            setDriveMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            sleep(500);
+
             if(curState == BotState.INITIAL_TURN)
             {
                 curState = BotState.DRIVE_TO_WALL;
+                sleep(500);
             }
             else
             {
+                backLeftMotor.setPower(0);
+                backRightMotor.setPower(0);
+                frontRightMotor.setPower(0);
+                frontLeftMotor.setPower(0);
+                sleep(500);
                 curState = BotState.FIND_WHITE_LINE;
+                sleep(500);
             }
-            sleep(500);
         }
-        else if (gyro.getHeading() > gyroTarget + TOLERANCE)
+        else
         {
-            backLeftMotor.setPower(-motorPower);
-            backRightMotor.setPower(motorPower);
-            frontLeftMotor.setPower(-motorPower);
-            frontRightMotor.setPower(motorPower);
-        }
-        else if (gyro.getHeading() < gyroTarget - TOLERANCE)
-        {
-            backLeftMotor.setPower(motorPower);
-            backRightMotor.setPower(-motorPower);
-            frontLeftMotor.setPower(motorPower);
-            frontRightMotor.setPower(-motorPower);
+            if(curState == BotState.INITIAL_TURN)
+            {
+                backLeftMotor.setPower(motorPower);
+                backRightMotor.setPower(-motorPower);
+                frontLeftMotor.setPower(motorPower);
+                frontRightMotor.setPower(-motorPower);
+            }
+            else
+            {
+                backLeftMotor.setPower(motorPower);
+                backRightMotor.setPower(-motorPower);
+                frontLeftMotor.setPower(0);
+                frontRightMotor.setPower(0);
+            }
         }
     }
 
-    public void driveUsingTime(double timeCheck, double motorPower)
+    public void setDriveMotorModes(DcMotor.RunMode mode)
     {
-        if(startMethodTime == 0 && timeBeenSet == false)
-        {
-            startMethodTime = time;
-            timeBeenSet = true;
-        }
-        if(timeBeenSet == true && time < startMethodTime + timeCheck)
+        backLeftMotor.setMode(mode);
+        backRightMotor.setMode(mode);
+        frontLeftMotor.setMode(mode);
+        frontRightMotor.setMode(mode);
+    }
+
+    public void useServo(double servoOutPosition, double servoInPosition)
+    {
+        leftButtonPushServo.setPosition(servoOutPosition);
+        sleep(3000);
+        leftButtonPushServo.setPosition(servoInPosition);
+        sleep(1000);
+    }
+
+
+
+    public void driveUsingEncoders(int encoderTarget, double motorPower)
+    {
+        updateTelemetry(telemetry);
+
+        setDriveMotorModes(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontRightMotor.setTargetPosition(encoderTarget);
+        frontLeftMotor.setTargetPosition(encoderTarget);
+        backRightMotor.setTargetPosition(encoderTarget);
+        backLeftMotor.setTargetPosition(encoderTarget);
+
+        while(backLeftMotor.isBusy() && frontLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy())
         {
             backLeftMotor.setPower(motorPower);
             backRightMotor.setPower(motorPower);
             frontLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
-            //alignFourMotorSpeed(backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor);
         }
-        else if (timeBeenSet == true && time >= startMethodTime + timeCheck)
+
+        if(curState == BotState.DRIVE_TO_WALL)
         {
-            backLeftMotor.setPower(0);
-            backRightMotor.setPower(0);
-            frontLeftMotor.setPower(0);
-            frontRightMotor.setPower(0);
-            startMethodTime = 0;
-            timeBeenSet = false;
-            if(curState == BotState.DRIVE_TO_WALL)
-            {
-                curState = BotState.TURNS_WITH_WALL;
-            }
-            else
-            {
-                //TODO::: ADD DRIVE_TO_CAP_BALL HERE ONCE WE CREATE IT
-            }
+            setDriveMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             sleep(500);
+            curState = BotState.TURNS_WITH_WALL;
         }
+        else if (curState == BotState.INITIAL_DRIVE_FORWARD)
+        {
+            setDriveMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            sleep(500);
+            curState = BotState.SHOOT_PARTICLES;
+        }
+        startMethodTime = 0;
     }
+
 
     public void pushButton()
     {
-        telemetry.addData("Red", leftButtonPushColorSensor.red());
-        telemetry.addData("Blue", leftButtonPushColorSensor.blue());
         if(leftButtonPushColorSensor.red() > leftButtonPushColorSensor.blue())
         {
             backLeftMotor.setPower(0);
             backRightMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            leftButtonPushServo.setPosition(leftServoOutPosition);
-            if(servoChecker.continuousServoPositionChecker(leftButtonPushServo) < .05)
+            useServo(rightServoOutPosition, rightServoInPosition);
+            if(firstBeaconPressed == false)
             {
-                curState = BotState.FIND_WHITE_LINE;
+                firstBeaconPressed = true;
             }
+            curState = BotState.GET_OFF_WHITE_LINE;
         }
         else
         {
-            driveUsingTime(2, .15);
+            driveUsingEncoders(250, .2);
         }
     }
 
@@ -202,11 +259,12 @@ public class DiagonalAutonomousRed extends OpMode
         }
         if(timeBeenSet == true && time < startMethodTime + timeCheck)
         {
-            backLeftMotor.setPower(-motorPower);
-            backRightMotor.setPower(0);
-            frontLeftMotor.setPower(motorPower);
+            backLeftMotor.setPower(motorPower);
+            backRightMotor.setPower(motorPower);
+            frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
             //alignFourMotorSpeed(backLeftMotor, backRightMotor, frontLeftMotor, frontRightMotor);
+
 
         }
         else if (timeBeenSet == true && time >= startMethodTime + timeCheck)
@@ -217,29 +275,38 @@ public class DiagonalAutonomousRed extends OpMode
             frontRightMotor.setPower(0);
             timeBeenSet = false;
             startMethodTime = 0;
-            if(gyro.getHeading() > 5)
-            {
-                frontLeftMotor.setPower(-.2);
-                frontRightMotor.setPower(.2);
-                backLeftMotor.setPower(-.2);
-                backRightMotor.setPower(.2);
-            }
-            curState = BotState.FIND_WHITE_LINE;
         }
     }
 
-
-    public void runToWhiteLine(double driveUsingTimeTriggerVal, double motorPower)
+    public void alignFourMotorSpeed(DcMotor motorOne, DcMotor motorTwo, DcMotor motorThree, DcMotor motorFour)
     {
-        if(colorSensor.getLightDetected() > driveUsingTimeTriggerVal)
+        if(motorSpeed(motorOne) != motorSpeed(motorTwo))
+        {
+            alignMotorSpeed(motorOne, motorTwo);
+        }
+        if(motorSpeed(motorThree) != motorSpeed(motorFour))
+        {
+            alignMotorSpeed(motorThree, motorFour);
+        }
+        if(motorSpeed(motorOne) == motorSpeed(motorTwo) && motorSpeed(motorThree) == motorSpeed(motorFour) && motorSpeed(motorTwo) != motorSpeed(motorThree))
+        {
+            alignMotorSpeed(motorTwo, motorThree);
+        }
+    }
+
+    public void runToWhiteLine(double driveUsingEncodersTriggerVal, double motorPower)
+    {
+        setDriveMotorModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if(colorSensor.getLightDetected() > driveUsingEncodersTriggerVal && leftButtonPushServo.getPosition() < .1)
         {
             backRightMotor.setPower(0);
             backLeftMotor.setPower(0);
             frontLeftMotor.setPower(0);
             frontRightMotor.setPower(0);
-            buttonPressed = false;
-            curState = BotState.PUSH_BUTTON;
             sleep(500);
+            setDriveMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            sleep(500);
+            curState = BotState.PUSH_BUTTON;
         }
         else
         {
@@ -247,40 +314,53 @@ public class DiagonalAutonomousRed extends OpMode
             backLeftMotor.setPower(motorPower);
             frontRightMotor.setPower(motorPower);
             frontLeftMotor.setPower(motorPower);
-            if(leftButtonPushServo.getPosition() <= leftServoOutPosition)
-            {
-                leftButtonPushServo.setPosition(leftServoInPosition);
-            }
         }
     }
 
     public void shootParticles()
     {
-        if(time <= 3)
+        if(startMethodTime == 0)
         {
-            leftShootMotor.setPower(.25);
-            rightShootMotor.setPower(.25);
+            startMethodTime = time;
+        }
+
+        if(time < startMethodTime + 3)
+        {
+            leftShootMotor.setPower(.2);
+            rightShootMotor.setPower(.2);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time <= 3.5 && time > 3)
+        if(time <=  startMethodTime + 3.5 && time > startMethodTime + 3)
         {
-            whiskMotor.setPower(1);
-            leftShootMotor.setPower(.25);
-            rightShootMotor.setPower(.25);
+            whiskMotor.setPower(-1);
+            leftShootMotor.setPower(.2);
+            rightShootMotor.setPower(.2);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time > 3.5 && time <= 5)
+        if(time > startMethodTime + 4 && time  <= startMethodTime + 6)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(.25);
             rightShootMotor.setPower(.25);
             alignMotorSpeed(leftShootMotor, rightShootMotor);
         }
-        if(time > 5)
+        if(time > startMethodTime + 6 && time < startMethodTime + 7)
+        {
+            whiskMotor.setPower(-1);
+            leftShootMotor.setPower(.2);
+            rightShootMotor.setPower(.2);
+            alignMotorSpeed(leftShootMotor, rightShootMotor);
+        }
+        if(time > startMethodTime + 7)
         {
             whiskMotor.setPower(0);
             leftShootMotor.setPower(0);
             rightShootMotor.setPower(0);
+            startMethodTime = 0;
+            backLeftMotor.setPower(0);
+            backRightMotor.setPower(0);
+            frontLeftMotor.setPower(0);
+            frontRightMotor.setPower(0);
             curState = BotState.INITIAL_TURN;
         }
     }
@@ -305,7 +385,7 @@ public class DiagonalAutonomousRed extends OpMode
         return 0;
     }
 
-    public double motorEncoderToPowerConverter(int numToConvert)
+    public double rpmToPowerConverter(int numToConvert)
     {
         double convertedNum = (double)(numToConvert / MAX_MOTOR_RPM);
         return convertedNum;
@@ -316,18 +396,19 @@ public class DiagonalAutonomousRed extends OpMode
         if(motorSpeed(motorOne) > motorSpeed(motorTwo))
         {
             telemetry.addData("Aligning Motor Speed", "MotorOne > MotorTwo");
-            motorOne.setPower(motorOne.getPower() - ((motorEncoderToPowerConverter(motorSpeed(motorOne)) - motorEncoderToPowerConverter(motorSpeed(motorTwo))) / 2));
-            motorTwo.setPower(motorTwo.getPower() + ((motorEncoderToPowerConverter(motorSpeed(motorOne)) - motorEncoderToPowerConverter(motorSpeed(motorTwo))) / 2));
+            motorOne.setPower(motorOne.getPower() - ((rpmToPowerConverter(motorSpeed(motorOne)) - rpmToPowerConverter(motorSpeed(motorTwo))) / 2));
+            motorTwo.setPower(motorTwo.getPower() + ((rpmToPowerConverter(motorSpeed(motorOne)) - rpmToPowerConverter(motorSpeed(motorTwo))) / 2));
         }
         else if (motorSpeed(motorOne) < motorSpeed(motorTwo))
         {
             telemetry.addData("Aligning Motor Speed", "MotorTwo > MotorOne");
-            motorTwo.setPower(motorTwo.getPower() - ((motorEncoderToPowerConverter(motorSpeed(motorTwo)) - motorEncoderToPowerConverter(motorSpeed(motorOne))) / 2));
-            motorOne.setPower(motorOne.getPower() + ((motorEncoderToPowerConverter(motorSpeed(motorTwo)) + motorEncoderToPowerConverter(motorSpeed(motorOne))) / 2));
+            motorTwo.setPower(motorTwo.getPower() - ((rpmToPowerConverter(motorSpeed(motorTwo)) - rpmToPowerConverter(motorSpeed(motorOne))) / 2));
+            motorOne.setPower(motorOne.getPower() + ((rpmToPowerConverter(motorSpeed(motorTwo)) + rpmToPowerConverter(motorSpeed(motorOne))) / 2));
         }
         else
         {
             telemetry.addData("Motor Speeds are Aligned", "MotorOne === MotorTwo");
         }
     }
+
 }

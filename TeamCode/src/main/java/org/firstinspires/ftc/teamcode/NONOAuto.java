@@ -47,10 +47,10 @@ public class NONOAuto extends OpMode
     @Override
     public void init()
     {
-        leftDrive = hardwareMap.dcMotor.get("leftDrive");
-        rightDrive = hardwareMap.dcMotor.get("rightDrive");
-        leftShootMotor = hardwareMap.dcMotor.get("leftShootMotor");
-        rightShootMotor = hardwareMap.dcMotor.get("rightShootMotor");
+        leftDrive = hardwareMap.dcMotor.get("left");
+        rightDrive = hardwareMap.dcMotor.get("right");
+        leftShootMotor = hardwareMap.dcMotor.get("flyWheel");
+        rightShootMotor = hardwareMap.dcMotor.get("flyWheelTop");
         intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
         servo = hardwareMap.servo.get("servo");
         colorsensor = hardwareMap.get(ModernRoboticsI2cColorSensor.class, "colorSensor");

@@ -18,6 +18,7 @@ public class NineOneNoOne extends OpMode
     DcMotor right;
     Servo servoLeft;
     Servo servoRight;
+    DcMotor intakeMotor;
     DcMotor rightLift;
     DcMotor leftLift;
     DcMotor flyWheel;
@@ -28,18 +29,17 @@ public class NineOneNoOne extends OpMode
     public void init()
     {
         left = hardwareMap.dcMotor.get("left");
+        intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
         right = hardwareMap.dcMotor.get("right");
         servoLeft = hardwareMap.servo.get("servoLeft");
         servoRight = hardwareMap.servo.get("servoRight");
         leftLift = hardwareMap.dcMotor.get("leftLift");
         rightLift = hardwareMap.dcMotor.get("rightLift");
         flyWheel = hardwareMap.dcMotor.get("flyWheel");
-        flyWheelTop = hardwareMap.dcMotor.get("flyWheel");
+        flyWheelTop = hardwareMap.dcMotor.get("flyWheelTop");
         rightLift.setDirection(DcMotorSimple.Direction.REVERSE);
         left.setDirection(DcMotorSimple.Direction.REVERSE);
         flyWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        flyWheelTop.setDirection(DcMotorSimple.Direction.REVERSE);
-
 
     }
 
@@ -49,7 +49,7 @@ public class NineOneNoOne extends OpMode
         //sets the drive motors power
         left.setPower(gamepad1.left_stick_y);
         right.setPower(gamepad1.right_stick_y);
-        if(gamepad1.a == true )
+        if(gamepad1.a == true)
         {
             servoLeft.setPosition(.5);
         }
@@ -66,6 +66,30 @@ public class NineOneNoOne extends OpMode
             servoRight.setPosition(0);
         }
 
+        if(gamepad2.dpad_up)
+        {
+            intakeMotor.setPower(1);
+        }
+        else if (gamepad2.dpad_down)
+        {
+            intakeMotor.setPower(-1);
+        }
+        else if (gamepad2.dpad_up == false && gamepad2.dpad_down == false)
+        {
+            intakeMotor.setPower(0);
+        }
+
+        if(gamepad2.left_bumper == true)
+        {
+            flyWheel.setPower(1);
+            flyWheelTop.setPower(1);
+        }
+        if(gamepad2.right_bumper == true)
+        {
+            flyWheel.setPower(0);
+            flyWheelTop.setPower(0);
+        }
+
 
         // code that powers the Lift
         if (gamepad1.left_trigger > 0)
@@ -78,23 +102,10 @@ public class NineOneNoOne extends OpMode
             rightLift.setPower(-gamepad1.right_trigger);
             leftLift.setPower(-gamepad1.right_trigger);
         }
-        else if(gamepad1.right_trigger == 0 && gamepad1.left_trigger == 0)
+        else
         {
             rightLift.setPower(0);
             leftLift.setPower(0);
-        }
-
-        //flywheel code
-        if(gamepad1.left_bumper == true)
-        {
-            flyWheel.setPower(1);
-            flyWheelTop.setPower(1);
-        }
-
-        if(gamepad1.right_bumper == true)
-        {
-            flyWheel.setPower(0);
-            flyWheelTop.setPower(0);
         }
 
         telemetry.addData("wooooooooo ", "hoooooooooo!!!");
